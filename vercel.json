@@ -1,0 +1,8 @@
+{
+  "functions": {
+    "pages/api/generate-pdf.ts": {
+      "maxDuration": 30
+    }
+  },
+  "regions": ["iad1"]
+} 
