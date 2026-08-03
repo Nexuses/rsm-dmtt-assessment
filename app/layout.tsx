@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     images: [
       {
-        url: "https://cdn-nexlink.s3.us-east-2.amazonaws.com/rsm_592baa45-bdc5-429c-91d1-61f6c8ee8753.webp",
+        url: "https://nexuseslink2024.s3.us-east-2.amazonaws.com/Frame_4__2__1785760512242_sxup.png",
         width: 1920,
         height: 540,
         alt: "RSM Pillar Two Initial Scoping Readiness Assessment",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     images: [
-      "https://cdn-nexlink.s3.us-east-2.amazonaws.com/rsm_592baa45-bdc5-429c-91d1-61f6c8ee8753.webp",
+      "https://nexuseslink2024.s3.us-east-2.amazonaws.com/Frame_4__2__1785760512242_sxup.png",
     ],
   },
   icons: {
