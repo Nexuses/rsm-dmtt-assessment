@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer'
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, pdf, Image } from '@react-pdf/renderer';
 import { questionsData } from '@/lib/questions';
-import { computeAssessment, DMTT_MEETING_BULLETS } from '@/lib/scoring';
+import { computeAssessment } from '@/lib/scoring';
 import { formatAnswerDisplay } from '@/lib/format-answer';
 import { google } from 'googleapis';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -1002,34 +1002,12 @@ async function generatePDFBuffer(
         )
       );
 
-    const createFurtherAssistancePage = () => {
-      const meetingBullets =
-        assessment.eligible && assessment.meetingBullets?.length
-          ? assessment.meetingBullets
-          : assessment.eligible
-            ? DMTT_MEETING_BULLETS
-            : [];
-
-      return React.createElement(Page, { size: "A4", style: styles.page },
+    const createFurtherAssistancePage = () =>
+      React.createElement(Page, { size: "A4", style: styles.page },
         React.createElement(View, { style: styles.pageLogoHeader },
           React.createElement(Image, { style: styles.pageLogo, src: logoSrc })
         ),
         React.createElement(View, { style: styles.assistancePageCenter },
-          ...(meetingBullets.length > 0
-            ? [
-                React.createElement(View, { key: "meeting-card", style: styles.meetingCard },
-                  React.createElement(Text, { style: styles.meetingCardTitle }, "In this meeting, we will:"),
-                  ...meetingBullets.map((bullet: string, idx: number) =>
-                    React.createElement(View, { key: `meeting-bullet-${idx}`, style: styles.meetingBulletRow },
-                      React.createElement(View, { style: styles.meetingBulletNumberWrap },
-                        React.createElement(Text, { style: styles.meetingBulletNumber }, String(idx + 1))
-                      ),
-                      React.createElement(Text, { style: styles.meetingBulletText }, bullet)
-                    )
-                  )
-                ),
-              ]
-            : []),
           React.createElement(View, { style: [styles.summaryCard, styles.assistanceCardCenter] },
             React.createElement(View, { style: styles.summaryCardCenter },
               React.createElement(Text, { style: styles.scoreLabel }, "Further Assistance")
@@ -1047,7 +1025,6 @@ async function generatePDFBuffer(
           React.createElement(Text, { style: styles.disclaimerTextBottom }, PDF_DISCLAIMER_TEXT)
         )
       );
-    };
     
     // Second page: Letter format - COMMENTED OUT FOR NOW (will be added back later)
     /*
