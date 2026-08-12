@@ -1,9 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import nodemailer from 'nodemailer'
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, pdf, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, pdf, Image, Link } from '@react-pdf/renderer';
 import { questionsData } from '@/lib/questions';
-import { computeAssessment } from '@/lib/scoring';
+import { computeAssessment, DMTT_SCHEDULING_URL } from '@/lib/scoring';
 import { formatAnswerDisplay } from '@/lib/format-answer';
 import { google } from 'googleapis';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
@@ -828,7 +828,6 @@ const PDF_DISCLAIMER_TEXT =
 
 const PDF_RSM_LOGO =
   "https://cdn-nexlink.s3.us-east-2.amazonaws.com/rsm-international-vector-logo_2-removebg-preview_5f53785d-2f5c-421e-a976-6388f78a00f2.png";
-const RSM_UAE_PILLAR_TWO_URL = "https://www.rsm.global/uae";
 
 /** Embed remote images as data URIs so @react-pdf renders JPEG/PNG reliably (avoids blank white cover). */
 async function fetchPdfImageDataUri(url: string): Promise<string> {
@@ -1013,9 +1012,11 @@ async function generatePDFBuffer(
               React.createElement(Text, { style: styles.scoreLabel }, "Further Assistance")
             ),
             React.createElement(Text, { style: styles.inquiryBody },
-              "For any queries regarding UAE DMTT / Pillar Two scoping, registration, or the interpretation of this assessment report, please visit RSM in the UAE:"
+              "For any queries regarding UAE DMTT / Pillar Two scoping, registration, or the interpretation of this assessment report, please contact the RSM Pillar Two team."
             ),
-            React.createElement(Text, { style: styles.inquiryUrl }, RSM_UAE_PILLAR_TWO_URL),
+            React.createElement(Link, { src: DMTT_SCHEDULING_URL, style: styles.inquiryUrl },
+              "Schedule a Meeting"
+            ),
             React.createElement(Text, { style: styles.inquiryBodyLast },
               "Our Pillar Two specialists can support you with scoping analysis, compliance roadmapping, and ongoing advisory under the UAE DMTT framework."
             )

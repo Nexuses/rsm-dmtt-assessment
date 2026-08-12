@@ -42,7 +42,7 @@ import {
   meetsRevenueThreshold,
   type Question,
 } from "@/lib/questions";
-import { computeAssessment, type AssessmentResult } from "@/lib/scoring";
+import { computeAssessment, DMTT_SCHEDULING_URL, type AssessmentResult } from "@/lib/scoring";
 import {
   hasSelectOtherText,
   parseSelectOther,
@@ -1098,13 +1098,6 @@ export function CybersecurityAssessmentForm() {
                                 </p>
                               </div>
                             ))}
-
-                            <div className="rounded-xl border border-dashed border-[#00AEEF]/40 bg-[#00AEEF]/5 px-3.5 py-2.5">
-                              <p className="text-xs leading-relaxed text-[#1b3a57]/90 sm:text-sm">
-                                {assessment.meetingPrompt ||
-                                  "Please select a convenient time for the team via the meeting link below, or book a consultation with our Pillar Two specialists."}
-                              </p>
-                            </div>
                           </div>
                         </div>
                       </motion.div>
@@ -1116,11 +1109,17 @@ export function CybersecurityAssessmentForm() {
                         className={cn(styles.buttonContainer, "px-6")}
                       >
                         <Button
-                          onClick={() => setIsConsultationModalOpen(true)}
+                          asChild
                           className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#00AEEF] text-base font-semibold text-white shadow-lg shadow-[#00AEEF]/30 transition-colors hover:bg-[#0091cf] sm:flex-1"
                         >
-                          <Phone className="h-5 w-5" />
-                          Book a Consultation
+                          <a
+                            href={DMTT_SCHEDULING_URL}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Phone className="h-5 w-5" />
+                            Schedule a Meeting
+                          </a>
                         </Button>
                       </motion.div>
                     </>

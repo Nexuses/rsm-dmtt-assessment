@@ -38,8 +38,10 @@ export const DMTT_MEETING_BULLETS = [
   'Present a customized compliance roadmap outlining critical milestones for 2025.',
 ];
 
-export const DMTT_MEETING_PROMPT =
-  'Please select a convenient time for the team via the meeting link below, or book a consultation with our Pillar Two specialists.';
+export const DMTT_MEETING_PROMPT = '';
+
+export const DMTT_SCHEDULING_URL =
+  'https://www.rsm.global/uae/service/tax-compliance-advisory-services';
 
 const emptyAxis = (category: string, recommendation: string): AssessmentAxisResult => ({
   score: 0,
