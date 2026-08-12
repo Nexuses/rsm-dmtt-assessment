@@ -398,11 +398,12 @@ export function CybersecurityAssessmentForm() {
       return;
     }
 
-    // Auto-advance for yes/no and select — use next path from updatedAnswers
+    // Auto-advance for yes/no, select, and country — use next path from updatedAnswers
     // (not stale TOTAL_QUESTIONS, which was wrong on Q1a Yes/No).
     if (
       currentQ.responseType === "yesno" ||
-      currentQ.responseType === "select"
+      currentQ.responseType === "select" ||
+      currentQ.responseType === "country"
     ) {
       const nextVisible = getVisibleQuestions(updatedAnswers);
       const currentIndex = nextVisible.findIndex((q) => q.id === questionId);
@@ -629,9 +630,7 @@ export function CybersecurityAssessmentForm() {
         return (
           <ThemedSelect
             value={currentAnswer}
-            onChange={(value) =>
-              setAnswers((prev) => ({ ...prev, [currentQ.id]: value }))
-            }
+            onChange={(value) => handleAnswerChange(currentQ.id, value)}
             options={countryOptions}
             placeholder="Select country..."
             searchable
