@@ -31,7 +31,7 @@ export const DMTT_IN_SCOPE_OUTCOME =
   'Based on our initial scoping analysis, your entity is part of an MNE Group that will be subject to the UAE Domestic Minimum Top-up Tax (DMTT) / Pillar Two Rules for financial years beginning on or after 1 January 2025. As per UAE Cabinet Decision no. 142 of 2024, the entity will be required to register for Pillar Two purposes in the UAE. We advise scheduling a 45-minute alignment meeting with the RSM Pillar Two team to review the full findings of this assessment and outline your compliance roadmap.';
 
 export const DMTT_OUT_OF_SCOPE_OUTCOME =
-  'The MNE group does not meet the revenue threshold to be subject to the Pillar Two Rules.';
+  'The MNE group does not meet the revenue threshold to be subject to the Pillar Two Rules for the tested fiscal year.';
 
 export const DMTT_MEETING_BULLETS = [
   'Walk through your detailed scoping results and identify key risk areas (e.g., accounting period alignments, entity classification, data readiness etc.).',
