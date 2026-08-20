@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import nodemailer from "nodemailer";
 import { google } from "googleapis";
+import { db } from "@/lib/db";
 
 interface ConsultationPayload {
   firstName: string;
@@ -100,12 +101,13 @@ const appendToSheet = async (payload: ConsultationPayload) => {
       requestBody: { values: [row] },
     });
     console.log('Successfully wrote consultation data to Google Sheets');
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string; code?: string; response?: { data?: unknown } };
     console.error("Failed to write consultation request to Google Sheets:", error);
     console.error("Error details:", {
-      message: error?.message,
-      code: error?.code,
-      response: error?.response?.data,
+      message: err?.message,
+      code: err?.code,
+      response: err?.response?.data,
     });
   }
 };
@@ -121,6 +123,18 @@ const buildTransporter = () =>
     },
   });
 
+const createConsultationRequest = async (payload: ConsultationPayload) =>
+  db.consultationRequest.create({
+    data: {
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      email: payload.email,
+      phone: payload.phone || null,
+      company: payload.context?.personalInfo?.company || null,
+      score: typeof payload.context?.score === "number" ? payload.context.score : null,
+    },
+  });
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({ message: "Method Not Allowed" });
@@ -132,7 +146,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: "Missing required fields." });
   }
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ message: "Invalid email address provided." });
+  }
+
   try {
+    await createConsultationRequest({ firstName, lastName, email, phone, context });
+    console.log("Consultation request saved to Postgres");
+
     const transporter = buildTransporter();
     const adminRecipients = process.env.CONSULTATION_RECIPIENTS || process.env.NOTIFICATION_EMAIL;
     const replyToEmail = process.env.REPLY_TO_EMAIL || process.env.NOTIFICATION_EMAIL;
