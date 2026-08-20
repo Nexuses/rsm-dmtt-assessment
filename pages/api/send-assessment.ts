@@ -5,6 +5,7 @@ import { Document, Page, Text, View, StyleSheet, pdf, Image, Link } from '@react
 import { questionsData } from '@/lib/questions';
 import { computeAssessment, DMTT_SCHEDULING_URL } from '@/lib/scoring';
 import { formatAnswerDisplay } from '@/lib/format-answer';
+import { db } from '@/lib/db';
 import { google } from 'googleapis';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
@@ -1701,12 +1702,47 @@ async function writeToGoogleSheets(
   }
 }
 
+async function createAssessmentSubmission(
+  personalInfo: PersonalInfo,
+  answers: Record<string, string>,
+) {
+  const assessment = computeAssessment(answers);
+
+  return db.assessmentSubmission.create({
+    data: {
+      name: personalInfo.name,
+      email: personalInfo.email,
+      company: personalInfo.company,
+      position: personalInfo.position,
+      phone: personalInfo.phone || null,
+      website: personalInfo.website || null,
+      totalScore: assessment.totalScore,
+      outcomeTitle: assessment.outcomeTitle || "",
+      outcomeMessage: assessment.outcomeMessage || "",
+      eligible: assessment.eligible,
+      ineligibleReason: assessment.ineligibleReason || null,
+      answers,
+    },
+  });
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' })
   }
 
   const { personalInfo, answers } = req.body as AssessmentData
+  if (
+    !personalInfo?.name ||
+    !personalInfo?.email ||
+    !personalInfo?.company ||
+    !personalInfo?.position ||
+    !answers ||
+    typeof answers !== 'object'
+  ) {
+    return res.status(400).json({ message: 'Missing required assessment fields.' });
+  }
+
   const assessment = computeAssessment(answers);
   const currentQuestions = questionsData;
 
@@ -1818,6 +1854,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('Starting assessment processing for:', personalInfo.email, personalInfo.company);
 
+    const submission = await createAssessmentSubmission(personalInfo, answers);
+    console.log('Assessment submission saved to Postgres:', submission.id);
+
     // Check if email is configured (but don't block if it's not - Google Sheets is more important)
     const emailConfigured = !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS && process.env.FROM_EMAIL);
     if (!emailConfigured) {
@@ -1878,6 +1917,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     } catch (uploadError) {
       console.error('User document S3 upload failed:', uploadError);
+    }
+
+    if (pdfS3Url || uploadedDocumentUrl) {
+      try {
+        await db.assessmentSubmission.update({
+          where: { id: submission.id },
+          data: {
+            ...(pdfS3Url ? { pdfS3Url } : {}),
+            ...(uploadedDocumentUrl ? { uploadedDocumentUrl } : {}),
+          },
+        });
+      } catch (dbUpdateError) {
+        console.error('Failed to update submission S3 URLs in Postgres:', dbUpdateError);
+      }
     }
 
     // Write assessment data to Google Sheets FIRST (before email processing)

@@ -15,7 +15,7 @@ Full shared-infra rules: [`SHARED-INFRA.md`](SHARED-INFRA.md).
 | nginx site | `rsm-dmtt` |
 | Domain | Replace `YOUR_DOMAIN` everywhere below |
 
-**Current persistence:** Google Sheets + S3 + SMTP. A dedicated Postgres DB is created for future Prisma/app writes; this deploy does **not** run migrations yet.
+**Persistence:** Postgres (`dmtt_assessments`) stores assessment + consultation rows. Google Sheets + S3 + SMTP remain best-effort alongside DB writes. Admin UI: `/submissions` (password via `SUBMISSIONS_PASSWORD`).
 
 ```text
 Internet → nginx (80/443) → 127.0.0.1:3001 (PM2: rsm-dmtt)
@@ -155,7 +155,11 @@ Set at least:
 
 ```bash
 # Shared Postgres — SAME host/user/password as other apps, DIFFERENT database name
+# Optional: &connection_limit=5 (keep pools small on shared max_connections=40)
 DATABASE_URL=postgresql://rsm:YOUR_PASSWORD@localhost:5432/dmtt_assessments?schema=public
+
+# Unique admin password for https://YOUR_DOMAIN/submissions
+SUBMISSIONS_PASSWORD=unique-strong-password-for-this-app-only
 
 # Google Sheets (this product’s spreadsheet — do not assume e-invoicing’s sheet)
 GOOGLE_SERVICE_ACCOUNT_CREDENTIALS=...
@@ -187,11 +191,12 @@ AWS_REGION=...
 
 ---
 
-## 6. Install, build, PM2
+## 6. Install, migrate, build, PM2
 
 ```bash
 cd /var/www/rsm-dmtt-assessment
 npm ci
+npx prisma migrate deploy
 npm run build
 ```
 
@@ -203,18 +208,13 @@ pm2 save
 pm2 status
 ```
 
-Confirm localhost only:
+Confirm localhost:
 
 ```bash
 curl -I http://127.0.0.1:3001
-ss -tlnp | grep 3001
-# Should show 127.0.0.1:3001 (or ::1), not 0.0.0.0 if you bind carefully via nginx-only access
 ```
 
-**Note:** Do not run `npx prisma migrate deploy` until Prisma is added to this repo. Sheets/email/S3 work without it. The empty `dmtt_assessments` DB is reserved for that later work.
-
 ---
-
 ## 7. nginx
 
 Copy the example and edit domain + confirm port `3001`:
@@ -257,15 +257,16 @@ sudo certbot renew --dry-run
 
 1. `curl -I http://127.0.0.1:3001` → `200` (or Next.js redirect).
 2. Open `https://YOUR_DOMAIN` and complete a test assessment.
-3. Confirm Google Sheet row + email + S3 PDF (if configured).
-4. Confirm still **one** Postgres container:
+3. Confirm a row in Postgres (`AssessmentSubmission`), Google Sheet, email, and S3 PDF (if configured).
+4. Open `https://YOUR_DOMAIN/submissions` with `SUBMISSIONS_PASSWORD` and confirm the submission appears.
+5. Confirm still **one** Postgres container:
 
 ```bash
 docker ps --filter name=rsm-assessments-postgres
 # Only one container; no new postgres on 5433/5434
 ```
 
-5. `pm2 list` shows `rsm-dmtt` online and `rsm-e-invoicing` (or other apps) still healthy on their ports.
+6. `pm2 list` shows `rsm-dmtt` online and `rsm-e-invoicing` (or other apps) still healthy on their ports.
 
 ---
 
@@ -275,6 +276,7 @@ docker ps --filter name=rsm-assessments-postgres
 cd /var/www/rsm-dmtt-assessment
 git pull
 npm ci
+npx prisma migrate deploy
 npm run build
 pm2 restart rsm-dmtt
 pm2 save
@@ -283,7 +285,6 @@ pm2 save
 If env vars changed, edit `.env` then `pm2 restart rsm-dmtt --update-env`.
 
 ---
-
 ## 11. Safety don’ts
 
 | Don’t | Why |

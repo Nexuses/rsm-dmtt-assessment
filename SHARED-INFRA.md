@@ -105,7 +105,7 @@ Reserve unique values **before** deploying. Update this table in your copy of th
 | App | Directory under `/var/www/` | PM2 name | Node PORT | Postgres database | nginx site name | Notes |
 |-----|-----------------------------|----------|-----------|-------------------|-----------------|--------|
 | E-invoicing (reference) | `RSM-assessment-e-invoicing` | `rsm-e-invoicing` | `3000` | `rsm_assessments` | `rsm-e-invoicing` | Owns the Docker Compose Postgres |
-| DMTT / Pillar Two | `rsm-dmtt-assessment` | `rsm-dmtt` | `3001` | `dmtt_assessments` | `rsm-dmtt` | Reuse shared Postgres; see [`DEPLOY.md`](DEPLOY.md) |
+| DMTT / Pillar Two | `rsm-dmtt-assessment` | `rsm-dmtt` | `3001` | `dmtt_assessments` | `rsm-dmtt` | Prisma + `/submissions`; see [`DEPLOY.md`](DEPLOY.md) |
 | *(next app)* | `…` | `…` | `3002` | `…` | `…` | |
 | *(next app)* | `…` | `…` | `3003` | `…` | `…` | |
 
