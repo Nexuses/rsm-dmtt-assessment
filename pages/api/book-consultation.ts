@@ -100,12 +100,13 @@ const appendToSheet = async (payload: ConsultationPayload) => {
       requestBody: { values: [row] },
     });
     console.log('Successfully wrote consultation data to Google Sheets');
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string; code?: string; response?: { data?: unknown } };
     console.error("Failed to write consultation request to Google Sheets:", error);
     console.error("Error details:", {
-      message: error?.message,
-      code: error?.code,
-      response: error?.response?.data,
+      message: err?.message,
+      code: err?.code,
+      response: err?.response?.data,
     });
   }
 };

@@ -28,8 +28,18 @@ interface AssessmentData {
   };
   answers: Record<string, string>;
   score?: number;
-  assessment?: any;
+  assessment?: unknown;
 }
+
+type ErrLike = {
+  message?: string;
+  code?: string | number;
+  name?: string;
+  stack?: string;
+  response?: { status?: number; statusText?: string; data?: unknown };
+  command?: string;
+  $metadata?: unknown;
+};
 
 interface PersonalInfo {
   name: string;
@@ -1328,12 +1338,13 @@ async function uploadBufferToS3(params: {
     const s3Url = `https://${bucketName}.s3.${region}.amazonaws.com/${params.key}`;
     console.log('AWS S3: Successfully uploaded to S3:', s3Url);
     return s3Url;
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as ErrLike;
     console.error('AWS S3: Error uploading to S3:', error);
     console.error('AWS S3: Error details:', {
-      message: error?.message,
-      code: error?.code,
-      name: error?.name,
+      message: err?.message,
+      code: err?.code,
+      name: err?.name,
     });
     return null;
   }
@@ -1439,8 +1450,9 @@ async function writeToGoogleSheets(
     try {
       credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS);
       console.log('Google Sheets: Credentials parsed successfully. Service account:', credentials.client_email);
-    } catch (parseError: any) {
-      console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_CREDENTIALS:', parseError.message);
+    } catch (parseError: unknown) {
+      const err = parseError as ErrLike;
+      console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_CREDENTIALS:', err.message);
       console.error('First 100 chars of credentials:', process.env.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS?.substring(0, 100));
       return;
     }
@@ -1665,19 +1677,20 @@ async function writeToGoogleSheets(
     });
 
     console.log('Google Sheets: Successfully wrote assessment data to Google Sheets');
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as ErrLike;
     console.error('Google Sheets: Error writing to Google Sheets:', error);
     console.error('Google Sheets: Error details:', {
-      message: error?.message,
-      code: error?.code,
-      status: error?.response?.status,
-      statusText: error?.response?.statusText,
-      response: error?.response?.data,
-      stack: process.env.NODE_ENV === 'development' ? error?.stack : undefined,
+      message: err?.message,
+      code: err?.code,
+      status: err?.response?.status,
+      statusText: err?.response?.statusText,
+      response: err?.response?.data,
+      stack: process.env.NODE_ENV === 'development' ? err?.stack : undefined,
     });
     
     // Common error: Sheet not shared with service account
-    if (error?.code === 403 || error?.response?.status === 403) {
+    if (err?.code === 403 || err?.response?.status === 403) {
       console.error('Google Sheets: PERMISSION DENIED - Make sure the spreadsheet is shared with:', 
         process.env.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS ? 
           JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_CREDENTIALS).client_email : 
@@ -2039,7 +2052,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       await transporter.verify();
       console.log('SMTP server connection verified');
-    } catch (verifyError: any) {
+    } catch (verifyError: unknown) {
       console.error('SMTP verification failed:', verifyError);
       console.error('SMTP Config:', {
         host: process.env.SMTP_HOST,
@@ -2077,13 +2090,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
       console.log('User email sent successfully. MessageId:', userEmailResult.messageId);
       userEmailSent = true;
-    } catch (userEmailError: any) {
+    } catch (userEmailError: unknown) {
+      const err = userEmailError as ErrLike;
       console.error('Error sending user email:', userEmailError);
       console.error('Email error details:', {
-        message: userEmailError?.message,
-        code: userEmailError?.code,
-        response: userEmailError?.response,
-        command: userEmailError?.command,
+        message: err?.message,
+        code: err?.code,
+        response: err?.response,
+        command: err?.command,
       });
       // Continue to send internal email even if user email fails
     }
@@ -2136,9 +2150,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       emailSent: userEmailSent,
       timestamp: new Date().toISOString()
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as ErrLike;
     console.error('Error in assessment processing:', error);
-    console.error('Error stack:', error?.stack);
+    console.error('Error stack:', err?.stack);
     res.status(500).json({ 
       message: 'Failed to send assessment results',
       error: process.env.NODE_ENV === 'development' ? String(error) : undefined
