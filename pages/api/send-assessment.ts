@@ -945,9 +945,6 @@ async function generatePDFBuffer(
           React.createElement(Text, { style: styles.coverLetterFooterBold }, "THE POWER OF BEING UNDERSTOOD"),
           React.createElement(Text, { style: styles.coverLetterFooterBold }, "AUDIT | TAX | CONSULTING"),
           React.createElement(Text, { style: styles.coverLetterFooterLine }, "RSM UAE"),
-          React.createElement(Text, { style: styles.coverLetterFooterLine }, "Floor 14, WeWork Hub 71, Al Khatem Tower,"),
-          React.createElement(Text, { style: styles.coverLetterFooterLine }, "ADGM Square, Al Maryah Island"),
-          React.createElement(Text, { style: styles.coverLetterFooterLine }, "P.O. Box 46617"),
           React.createElement(Text, { style: styles.coverLetterFooterLine }, "T: +971 (0)4 554 7423"),
           React.createElement(Text, { style: styles.coverLetterFooterLine }, "W: www.rsm.ae")
         )
