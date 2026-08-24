@@ -167,13 +167,16 @@ GOOGLE_SHEETS_SPREADSHEET_ID=...
 GOOGLE_SHEETS_ASSESSMENT_SHEET_NAME=Sheet1
 GOOGLE_SHEETS_CONSULTATION_SHEET_NAME=Sheet2
 
-# SMTP
-SMTP_HOST=...
+# SMTP (SendGrid Relay — not the Web API)
+# SMTP_USER is the literal string "apikey". SMTP_PASS is a SendGrid API key
+# with Mail Send permission. FROM_EMAIL must be a verified Single Sender or
+# an address on an authenticated domain.
+SMTP_HOST=smtp.sendgrid.net
 SMTP_PORT=587
 SMTP_SECURE=false
-SMTP_USER=...
-SMTP_PASS=...
-FROM_EMAIL=...
+SMTP_USER=apikey
+SMTP_PASS=YOUR_SENDGRID_API_KEY
+FROM_EMAIL=verified-sender@yourdomain.com
 NOTIFICATION_EMAIL=...
 REPLY_TO_EMAIL=...
 CONSULTATION_RECIPIENTS=...
@@ -188,6 +191,7 @@ AWS_REGION=...
 - `YOUR_PASSWORD` must match the shared Postgres password (see e-invoicing `.env` / compose secrets on the VPS).
 - `localhost:5432` is correct: PM2 runs on the host, not inside the Postgres container network.
 - Never commit `.env`.
+- After changing SMTP values, `pm2 restart rsm-dmtt` so the process picks up the new env.
 
 ---
 
@@ -257,7 +261,7 @@ sudo certbot renew --dry-run
 
 1. `curl -I http://127.0.0.1:3001` → `200` (or Next.js redirect).
 2. Open `https://YOUR_DOMAIN` and complete a test assessment.
-3. Confirm a row in Postgres (`AssessmentSubmission`), Google Sheet, email, and S3 PDF (if configured).
+3. Confirm a row in Postgres (`AssessmentSubmission`), Google Sheet, SendGrid email (user report + internal notification), and S3 PDF (if configured).
 4. Open `https://YOUR_DOMAIN/submissions` with `SUBMISSIONS_PASSWORD` and confirm the submission appears.
 5. Confirm still **one** Postgres container:
 
