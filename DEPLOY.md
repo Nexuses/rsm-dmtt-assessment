@@ -167,15 +167,14 @@ GOOGLE_SHEETS_SPREADSHEET_ID=...
 GOOGLE_SHEETS_ASSESSMENT_SHEET_NAME=Sheet1
 GOOGLE_SHEETS_CONSULTATION_SHEET_NAME=Sheet2
 
-# SMTP (SendGrid Relay — not the Web API)
-# SMTP_USER is the literal string "apikey". SMTP_PASS is a SendGrid API key
-# with Mail Send permission. FROM_EMAIL must be a verified Single Sender or
-# an address on an authenticated domain.
-SMTP_HOST=smtp.sendgrid.net
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=apikey
-SMTP_PASS=YOUR_SENDGRID_API_KEY
+# SMTP (Resend)
+# SMTP_USER is the literal string "resend". SMTP_PASS is your Resend API key
+# (re_...). FROM_EMAIL must use a domain verified in Resend.
+SMTP_HOST=smtp.resend.com
+SMTP_PORT=465
+SMTP_SECURE=true
+SMTP_USER=resend
+SMTP_PASS=YOUR_RESEND_API_KEY
 FROM_EMAIL=verified-sender@yourdomain.com
 NOTIFICATION_EMAIL=...
 REPLY_TO_EMAIL=...
@@ -261,7 +260,7 @@ sudo certbot renew --dry-run
 
 1. `curl -I http://127.0.0.1:3001` → `200` (or Next.js redirect).
 2. Open `https://YOUR_DOMAIN` and complete a test assessment.
-3. Confirm a row in Postgres (`AssessmentSubmission`), Google Sheet, SendGrid email (user report + internal notification), and S3 PDF (if configured).
+3. Confirm a row in Postgres (`AssessmentSubmission`), Google Sheet, Resend email (user report + internal notification), and S3 PDF (if configured).
 4. Open `https://YOUR_DOMAIN/submissions` with `SUBMISSIONS_PASSWORD` and confirm the submission appears.
 5. Confirm still **one** Postgres container:
 
