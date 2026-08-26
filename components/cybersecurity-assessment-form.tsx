@@ -646,7 +646,7 @@ export function CybersecurityAssessmentForm() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.png,.jpg,.jpeg,.xlsx,.xls"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.png,.jpg,.jpeg"
               className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0] ?? null;
