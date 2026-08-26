@@ -111,7 +111,7 @@ export const questionsData: Question[] = [
     subject: '2. Group Structure',
     responseType: 'file',
     optional: true,
-    placeholder: 'Upload ownership structure (PDF, PNG, JPG, or XLSX)',
+    placeholder: 'Upload ownership structure (PDF, DOC/DOCX, XLS/XLSX, CSV, PPT/PPTX, PNG, or JPG)',
   },
   {
     id: 'q3a',
