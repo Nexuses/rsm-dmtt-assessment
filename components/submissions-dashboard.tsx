@@ -61,6 +61,7 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(initialAuthenticated);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submissions, setSubmissions] = useState<SubmissionResponse>({
     assessments: [],
@@ -150,6 +151,42 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
     setError(null);
   }
 
+  async function handleDownloadCsv() {
+    setExporting(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/submissions/export?type=${activeTab}`);
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || "Failed to download CSV.");
+      }
+
+      const blob = await response.blob();
+      const filename =
+        activeTab === "consultations"
+          ? "consultation_requests.csv"
+          : "assessment_submissions.csv";
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to download CSV.";
+      setError(message);
+      if (message === "Unauthorized.") {
+        setAuthenticated(false);
+      }
+    } finally {
+      setExporting(false);
+    }
+  }
+
   if (!isConfigured) {
     return (
       <Card className="border-[#009CD9]/20 shadow-lg">
@@ -215,6 +252,17 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
           />
           <Button variant="outline" onClick={() => void loadSubmissions()} disabled={loading}>
             Refresh
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => void handleDownloadCsv()}
+            disabled={exporting || loading}
+          >
+            {exporting
+              ? "Downloading..."
+              : activeTab === "consultations"
+                ? "Download consultations CSV"
+                : "Download CSV"}
           </Button>
           <Button
             onClick={() => void handleLogout()}
