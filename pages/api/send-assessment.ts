@@ -944,7 +944,8 @@ async function generatePDFBuffer(
           React.createElement(Text, { style: styles.coverLetterSignatory }, "RSM UAE"),
           React.createElement(Text, { style: styles.coverLetterFooterBold }, "THE POWER OF BEING UNDERSTOOD"),
           React.createElement(Text, { style: styles.coverLetterFooterBold }, "AUDIT | TAX | CONSULTING"),
-          React.createElement(Text, { style: styles.coverLetterFooterLine }, "RSM UAE"),
+          React.createElement(Text, { style: styles.coverLetterFooterLine }, "RSM Dahman Management Consultancy LLC"),
+          React.createElement(Text, { style: styles.coverLetterFooterLine }, "Dubai: Offices 3109-3110, The Burlington Tower, Business Bay, Dubai, UAE"),
           React.createElement(Text, { style: styles.coverLetterFooterLine }, "T: +971 (0)4 554 7423"),
           React.createElement(Text, { style: styles.coverLetterFooterLine }, "W: www.rsm.ae")
         )
