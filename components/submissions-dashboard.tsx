@@ -405,7 +405,20 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
 
                   return (
                     <Fragment key={item.id}>
-                      <TableRow>
+                      <TableRow
+                        className={isExpanded ? "cursor-pointer bg-[#f8fbfd]" : "cursor-pointer"}
+                        data-state={isExpanded ? "expanded" : undefined}
+                        onClick={() => setExpandedId(isExpanded ? null : item.id)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter" || event.key === " ") {
+                            event.preventDefault();
+                            setExpandedId(isExpanded ? null : item.id);
+                          }
+                        }}
+                        tabIndex={0}
+                        aria-expanded={isExpanded}
+                        aria-label={`${isExpanded ? "Collapse" : "Expand"} details for ${item.name}`}
+                      >
                         <TableCell className="whitespace-nowrap text-sm text-slate-600">
                           {formatSubmittedDate(item.createdAt)}
                         </TableCell>
@@ -442,26 +455,18 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
                             {item.eligible ? "In scope" : "Out of scope"}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell onClick={(event) => event.stopPropagation()}>
                           <AttachmentCellButton
                             count={attachments.length}
                             onClick={() => openAttachmentViewer(item)}
                           />
                         </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-slate-500"
-                            onClick={() => setExpandedId(isExpanded ? null : item.id)}
-                            aria-label={isExpanded ? "Collapse details" : "Expand details"}
-                          >
-                            {isExpanded ? (
-                              <ChevronDown className="h-4 w-4" />
-                            ) : (
-                              <ChevronRight className="h-4 w-4" />
-                            )}
-                          </Button>
+                        <TableCell className="text-slate-500">
+                          {isExpanded ? (
+                            <ChevronDown className="h-4 w-4" aria-hidden />
+                          ) : (
+                            <ChevronRight className="h-4 w-4" aria-hidden />
+                          )}
                         </TableCell>
                       </TableRow>
 
