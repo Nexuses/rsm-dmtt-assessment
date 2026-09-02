@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +31,7 @@ import {
   SubmissionsPagination,
 } from "@/components/submissions/submissions-pagination";
 import { getSubmissionAttachments } from "@/lib/submission-attachments";
+import { SubmissionsPageHeading } from "@/components/submissions/submissions-page-heading";
 
 type FormattedAnswer = {
   questionId: string;
@@ -314,10 +315,10 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
     return (
       <Card className="border-[#009CD9]/20 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-2xl text-[#1b3a57]">Submissions</CardTitle>
-          <CardDescription>
-            Set `SUBMISSIONS_PASSWORD` in your environment before using this page.
-          </CardDescription>
+          <SubmissionsPageHeading
+            size="compact"
+            description="Set `SUBMISSIONS_PASSWORD` in your environment before using this page."
+          />
         </CardHeader>
       </Card>
     );
@@ -328,10 +329,10 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
       <div className="mx-auto max-w-md">
         <Card className="border-[#009CD9]/20 shadow-lg">
           <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl text-[#1b3a57]">Submissions Login</CardTitle>
-            <CardDescription>
-              Enter the shared admin password to view received submissions.
-            </CardDescription>
+            <SubmissionsPageHeading
+              size="compact"
+              description="Enter the shared admin password to view received submissions."
+            />
           </CardHeader>
           <CardContent>
             <form className="space-y-4" onSubmit={handleLogin}>
@@ -359,12 +360,7 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
 
   return (
     <div className="space-y-5">
-      <div>
-        <h1 className="text-3xl font-semibold text-[#1b3a57]">Submissions</h1>
-        <p className="mt-1 text-sm text-slate-600">
-          View all received assessment submissions.
-        </p>
-      </div>
+      <SubmissionsPageHeading description="View all received assessment submissions." />
 
       <SubmissionsToolbar
         filters={filters}
