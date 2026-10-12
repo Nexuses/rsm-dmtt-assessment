@@ -66,6 +66,9 @@ main() {
   done
   export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION
   export AWS_DEFAULT_REGION="$AWS_REGION"
+  # A profile set in the caller's shell must not override the key above; the
+  # CLI errors out if that profile does not exist on this machine.
+  unset AWS_PROFILE AWS_DEFAULT_PROFILE AWS_SESSION_TOKEN
 
   local MODE DB_URL=""
   local -a DOCKER=(docker)
@@ -117,7 +120,7 @@ main() {
     "${DOCKER[@]}" exec "$BACKUP_DB_CONTAINER" pg_dump -U "$BACKUP_DB_USER" -d "$BACKUP_DB_NAME" -Fc >"$DUMP" \
       || die "pg_dump failed."
   else
-    log "Dumping database from connection URL"
+    log "Dumping database from connection URL (BACKUP_DB_CONTAINER not set in environment or ${ENV_FILE})"
     pg_dump --dbname="$DB_URL" -Fc >"$DUMP" || die "pg_dump failed."
   fi
   [ -s "$DUMP" ] || die "pg_dump produced an empty file."

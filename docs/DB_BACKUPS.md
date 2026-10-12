@@ -184,8 +184,9 @@ Then check the bucket with the AWS CLI commands below.
 
 ## AWS CLI commands
 
-Run these from a laptop. Store the key once in a named profile instead of
-exporting it in every shell:
+Run these from a laptop, not the VPS (the backup script reads its key from
+`.env` and ignores any `AWS_PROFILE`). Store the key once in a named profile
+instead of exporting it in every shell:
 
 ```bash
 aws configure --profile rsm-backups   # access key, secret, region us-east-1, output json
