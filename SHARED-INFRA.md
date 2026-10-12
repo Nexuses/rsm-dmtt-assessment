@@ -102,12 +102,12 @@ sudo docker-compose up -d
 
 Reserve unique values **before** deploying. Update this table in your copy of the doc as apps go live.
 
-| App | Directory under `/var/www/` | PM2 name | Node PORT | Postgres database | nginx site name | Notes |
-|-----|-----------------------------|----------|-----------|-------------------|-----------------|--------|
-| E-invoicing (reference) | `RSM-assessment-e-invoicing` | `rsm-e-invoicing` | `3000` | `rsm_assessments` | `rsm-e-invoicing` | Owns the Docker Compose Postgres |
-| DMTT / Pillar Two | `rsm-dmtt-assessment` | `rsm-dmtt` | `3001` | `dmtt_assessments` | `rsm-dmtt` | Prisma + `/submissions`; see [`DEPLOY.md`](DEPLOY.md) |
-| *(next app)* | `…` | `…` | `3002` | `…` | `…` | |
-| *(next app)* | `…` | `…` | `3003` | `…` | `…` | |
+| App | Directory under `/var/www/` | PM2 name | Node PORT | Postgres database | nginx site name | Weekly S3 backup (Sunday) | Notes |
+|-----|-----------------------------|----------|-----------|-------------------|-----------------|---------------------------|--------|
+| E-invoicing (reference) | `RSM-assessment-e-invoicing` | `rsm-e-invoicing` | `3000` | `rsm_assessments` | `rsm-e-invoicing` | 02:00 → `rsm-e-invoicing-db-backups` | Owns the Docker Compose Postgres |
+| DMTT / Pillar Two | `rsm-dmtt-assessment` | `rsm-dmtt` | `3001` | `dmtt_assessments` | `rsm-dmtt` | 02:15 → `rsm-dmtt-db-backups` | Prisma + `/submissions` |
+| UAE Cyber | `rsm-uae-cyber-assessment` | `rsm-uae-cyber` | `3002` | `uae_cyber_assessments` | `rsm-uae-cyber` | 02:30 → `rsm-uae-cyber-db-backups` | |
+| *(next app)* | `…` | `…` | `3003` | `…` | `…` | 02:45 → `rsm-…-db-backups` | Reuse same Postgres; **new DB only** |
 
 **Conventions**
 
@@ -115,6 +115,7 @@ Reserve unique values **before** deploying. Update this table in your copy of th
 - DB names: snake_case, unique, e.g. `cyber_assessments`, `vat_assessments`
 - PM2 names: short kebab-case, unique (`pm2 list` must not collide)
 - nginx: unique `server_name` and unique file under `/etc/nginx/sites-available/`
+- Backups: each app copies `scripts/backup/` and dumps **only its own database** to its own bucket `rsm-<app>-db-backups`, from `RSMae`'s crontab, in its own 15-minute Sunday slot (02:00, 02:15, 02:30, …). Slots never overlap because every dump runs inside the one shared Postgres container on a ~4 GB box. Runbook: `docs/DB_BACKUPS.md` in each app.
 
 ---
 

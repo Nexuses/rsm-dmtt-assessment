@@ -288,6 +288,16 @@ pm2 save
 If env vars changed, edit `.env` then `pm2 restart rsm-dmtt --update-env`.
 
 ---
+
+## Database backups
+
+Weekly `pg_dump` of `dmtt_assessments` to the private S3 bucket `rsm-dmtt-db-backups`,
+run by `RSMae`'s crontab on Sunday at 02:15 server time. The other assessment apps on
+this VPS back up their own databases at 02:00 and 02:30, so dumps from the shared
+Postgres container never overlap. Setup, verification and restore:
+[`docs/DB_BACKUPS.md`](docs/DB_BACKUPS.md).
+
+---
 ## 11. Safety don’ts
 
 | Don’t | Why |
@@ -328,3 +338,5 @@ sudo docker-compose up -d
 | [`ecosystem.config.cjs`](ecosystem.config.cjs) | PM2 (`rsm-dmtt`, port `3001`) |
 | [`deploy/nginx.conf.example`](deploy/nginx.conf.example) | nginx reverse proxy template |
 | [`env.example`](env.example) | Env template including `DATABASE_URL` |
+| [`docs/DB_BACKUPS.md`](docs/DB_BACKUPS.md) | Weekly Postgres backups to S3 (runbook) |
+| [`scripts/backup/`](scripts/backup/) | Backup, cron install and bucket scripts |
