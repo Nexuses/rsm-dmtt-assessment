@@ -53,6 +53,7 @@ import {
   getCountryDropdownOptions,
 } from "@/lib/country-options";
 import { ThemedSelect } from "@/components/themed-select";
+import { withBasePath } from "@/lib/base-path";
 
 const BLOCKED_EMAIL_DOMAINS = [
   "gmail.com",
@@ -354,7 +355,7 @@ export function CybersecurityAssessmentForm() {
       };
 
       try {
-        const response = await fetch("/api/send-assessment", {
+        const response = await fetch(withBasePath("/api/send-assessment"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(assessmentData),
@@ -517,7 +518,7 @@ export function CybersecurityAssessmentForm() {
     setConsultationError(null);
     setIsSubmittingConsultation(true);
     try {
-      const response = await fetch("/api/book-consultation", {
+      const response = await fetch(withBasePath("/api/book-consultation"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
