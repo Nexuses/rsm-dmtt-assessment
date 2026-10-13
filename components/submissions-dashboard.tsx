@@ -31,6 +31,7 @@ import {
   SubmissionsPagination,
 } from "@/components/submissions/submissions-pagination";
 import { getSubmissionAttachments } from "@/lib/submission-attachments";
+import { withBasePath } from "@/lib/base-path";
 import { SubmissionsPageHeading } from "@/components/submissions/submissions-page-heading";
 
 type FormattedAnswer = {
@@ -217,7 +218,7 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
     setError(null);
 
     try {
-      const response = await fetch("/api/submissions");
+      const response = await fetch(withBasePath("/api/submissions"));
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
@@ -243,7 +244,7 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
     setLoading(true);
 
     try {
-      const response = await fetch("/api/submissions/login", {
+      const response = await fetch(withBasePath("/api/submissions/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
@@ -264,7 +265,7 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
   }
 
   async function handleLogout() {
-    await fetch("/api/submissions/logout", { method: "POST" });
+    await fetch(withBasePath("/api/submissions/logout"), { method: "POST" });
     setAuthenticated(false);
     setExpandedId(null);
     setAssessments([]);
@@ -278,7 +279,7 @@ export function SubmissionsDashboard({ isConfigured, initialAuthenticated }: Pro
     setError(null);
 
     try {
-      const response = await fetch("/api/submissions/export?type=assessments");
+      const response = await fetch(withBasePath("/api/submissions/export?type=assessments"));
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));

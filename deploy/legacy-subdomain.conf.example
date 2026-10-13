@@ -1,0 +1,35 @@
+# Old address https://dmtt-assessment.rsm.ae -> https://hub.rsm.ae/dmtt-assessment
+# Replaces the body of /etc/nginx/sites-available/rsm-dmtt. Keep the
+# certbot-managed listen/ssl lines and the port-80 server block as they are.
+#
+# Pages redirect to the hub, keeping the rest of the URL. API calls are still
+# proxied (with the new prefix) so a browser that loaded the old page before
+# the switch can finish and submit its assessment.
+
+server {
+    server_name dmtt-assessment.rsm.ae;
+
+    client_max_body_size 25m;
+
+    location /api/ {
+        proxy_pass http://127.0.0.1:3001/dmtt-assessment/api/;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_read_timeout 120s;
+    }
+
+    location / {
+        return 301 https://hub.rsm.ae/dmtt-assessment$request_uri;
+    }
+
+    # --- keep the existing certbot lines below ---
+    # listen [::]:443 ssl; # managed by Certbot
+    # listen 443 ssl; # managed by Certbot
+    # ssl_certificate /etc/letsencrypt/live/dmtt-assessment.rsm.ae/fullchain.pem; # managed by Certbot
+    # ssl_certificate_key /etc/letsencrypt/live/dmtt-assessment.rsm.ae/privkey.pem; # managed by Certbot
+    # include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}

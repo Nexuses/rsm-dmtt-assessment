@@ -12,13 +12,15 @@ Full shared-infra rules: [`SHARED-INFRA.md`](SHARED-INFRA.md).
 | PM2 name | `rsm-dmtt` |
 | Listen | `127.0.0.1:3001` |
 | Postgres DB | `dmtt_assessments` |
-| nginx site | `rsm-dmtt` |
-| Domain | Replace `YOUR_DOMAIN` everywhere below |
+| Public URL | `https://hub.rsm.ae/dmtt-assessment` (Next.js `basePath`) |
+| nginx | Snippet `/etc/nginx/hub.rsm.ae.d/dmtt-assessment.conf` inside the shared `hub.rsm.ae` server block |
+| Old address | `dmtt-assessment.rsm.ae` → redirects to the hub path |
 
-**Persistence:** Postgres (`dmtt_assessments`) stores assessment + consultation rows. Google Sheets + S3 + SMTP remain best-effort alongside DB writes. Admin UI: `/submissions` (password via `SUBMISSIONS_PASSWORD`).
+**Persistence:** Postgres (`dmtt_assessments`) stores assessment + consultation rows. Google Sheets + S3 + SMTP remain best-effort alongside DB writes. Admin UI: `https://hub.rsm.ae/dmtt-assessment/submissions` (password via `SUBMISSIONS_PASSWORD`).
 
 ```text
-Internet → nginx (80/443) → 127.0.0.1:3001 (PM2: rsm-dmtt)
+Internet → nginx hub.rsm.ae (80/443)
+             └── /dmtt-assessment/* → 127.0.0.1:3001 (PM2: rsm-dmtt)
                                     ↓
                          127.0.0.1:5432 (shared Docker Postgres)
                          ├── rsm_assessments      (e-invoicing — do not use)
@@ -158,7 +160,7 @@ Set at least:
 # Optional: &connection_limit=5 (keep pools small on shared max_connections=40)
 DATABASE_URL=postgresql://rsm:YOUR_PASSWORD@localhost:5432/dmtt_assessments?schema=public
 
-# Unique admin password for https://YOUR_DOMAIN/submissions
+# Unique admin password for https://hub.rsm.ae/dmtt-assessment/submissions
 SUBMISSIONS_PASSWORD=unique-strong-password-for-this-app-only
 
 # Google Sheets (this product’s spreadsheet — do not assume e-invoicing’s sheet)
@@ -214,43 +216,42 @@ pm2 status
 Confirm localhost:
 
 ```bash
-curl -I http://127.0.0.1:3001
+curl -I http://127.0.0.1:3001/dmtt-assessment
 ```
+
+Plain `/` returns 404 under `basePath`; that is expected (also locally: `http://localhost:3001/dmtt-assessment`).
 
 ---
-## 7. nginx
+## 7. nginx (path on hub.rsm.ae)
 
-Copy the example and edit domain + confirm port `3001`:
+The path is `basePath` in `next.config.js` and must match the nginx `location` exactly.
 
-```bash
-sudo cp /var/www/rsm-dmtt-assessment/deploy/nginx.conf.example \
-  /etc/nginx/sites-available/rsm-dmtt
-sudo nano /etc/nginx/sites-available/rsm-dmtt
-# Replace YOUR_DOMAIN with the real hostname
-```
-
-Enable and reload:
+Shared `hub.rsm.ae` server block, once per VPS (skip if `/etc/nginx/sites-enabled/hub.rsm.ae` exists):
 
 ```bash
-sudo ln -sf /etc/nginx/sites-available/rsm-dmtt /etc/nginx/sites-enabled/rsm-dmtt
+sudo mkdir -p /etc/nginx/hub.rsm.ae.d
+sudo cp /var/www/rsm-dmtt-assessment/deploy/hub.rsm.ae.conf.example /etc/nginx/sites-available/hub.rsm.ae
+sudo ln -s /etc/nginx/sites-available/hub.rsm.ae /etc/nginx/sites-enabled/hub.rsm.ae
 sudo nginx -t && sudo systemctl reload nginx
 ```
 
-Point DNS `A`/`AAAA` for `YOUR_DOMAIN` at this VPS before certbot.
+This app's location snippet:
+
+```bash
+sudo cp /var/www/rsm-dmtt-assessment/deploy/nginx.conf.example /etc/nginx/hub.rsm.ae.d/dmtt-assessment.conf
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+The old address `dmtt-assessment.rsm.ae` redirects to the hub path and still proxies `/api/` for pages loaded before the switch: [`deploy/legacy-subdomain.conf.example`](deploy/legacy-subdomain.conf.example).
 
 ---
 
 ## 8. TLS (certbot)
 
-```bash
-sudo certbot --nginx -d YOUR_DOMAIN
-```
-
-Follow prompts. Confirm HTTPS in a browser.
-
-Renewal is normally handled by certbot’s timer; spot-check:
+Only needed once for the hub, not per assessment:
 
 ```bash
+sudo certbot --nginx -d hub.rsm.ae
 sudo certbot renew --dry-run
 ```
 
@@ -258,10 +259,10 @@ sudo certbot renew --dry-run
 
 ## 9. Smoke test
 
-1. `curl -I http://127.0.0.1:3001` → `200` (or Next.js redirect).
-2. Open `https://YOUR_DOMAIN` and complete a test assessment.
+1. `curl -I http://127.0.0.1:3001/dmtt-assessment` → `200`.
+2. Open `https://hub.rsm.ae/dmtt-assessment` and complete a test assessment.
 3. Confirm a row in Postgres (`AssessmentSubmission`), Google Sheet, Resend email (user report + internal notification), and S3 PDF (if configured).
-4. Open `https://YOUR_DOMAIN/submissions` with `SUBMISSIONS_PASSWORD` and confirm the submission appears.
+4. Open `https://hub.rsm.ae/dmtt-assessment/submissions` with `SUBMISSIONS_PASSWORD` and confirm the submission appears.
 5. Confirm still **one** Postgres container:
 
 ```bash
@@ -336,7 +337,10 @@ sudo docker-compose up -d
 |------|---------|
 | [`SHARED-INFRA.md`](SHARED-INFRA.md) | Multi-app VPS rules |
 | [`ecosystem.config.cjs`](ecosystem.config.cjs) | PM2 (`rsm-dmtt`, port `3001`) |
-| [`deploy/nginx.conf.example`](deploy/nginx.conf.example) | nginx reverse proxy template |
+| [`deploy/hub.rsm.ae.conf.example`](deploy/hub.rsm.ae.conf.example) | Shared `hub.rsm.ae` server block (once per VPS) |
+| [`deploy/nginx.conf.example`](deploy/nginx.conf.example) | This app's `/dmtt-assessment` location snippet |
+| [`deploy/legacy-subdomain.conf.example`](deploy/legacy-subdomain.conf.example) | Old `dmtt-assessment.rsm.ae` → hub redirect |
+| [`lib/base-path.ts`](lib/base-path.ts) | `withBasePath()` for client `fetch()` and cookie path |
 | [`env.example`](env.example) | Env template including `DATABASE_URL` |
 | [`docs/DB_BACKUPS.md`](docs/DB_BACKUPS.md) | Weekly Postgres backups to S3 (runbook) |
 | [`scripts/backup/`](scripts/backup/) | Backup, cron install and bucket scripts |

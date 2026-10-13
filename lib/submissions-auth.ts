@@ -1,5 +1,6 @@
 import type { NextApiRequest } from "next";
 import type { NextRequest } from "next/server";
+import { COOKIE_PATH } from "@/lib/base-path";
 
 export const SUBMISSIONS_COOKIE_NAME = "submissions_auth";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
@@ -39,12 +40,12 @@ export function isValidSignedAuthCookieValue(cookieValue?: string | null) {
 
 export function getSubmissionsCookieHeader() {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  return `${SUBMISSIONS_COOKIE_NAME}=${createSignedAuthCookieValue()}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}${secure}`;
+  return `${SUBMISSIONS_COOKIE_NAME}=${createSignedAuthCookieValue()}; Path=${COOKIE_PATH}; HttpOnly; SameSite=Lax; Max-Age=${COOKIE_MAX_AGE}${secure}`;
 }
 
 export function getClearSubmissionsCookieHeader() {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  return `${SUBMISSIONS_COOKIE_NAME}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
+  return `${SUBMISSIONS_COOKIE_NAME}=; Path=${COOKIE_PATH}; HttpOnly; SameSite=Lax; Max-Age=0${secure}`;
 }
 
 export function isAuthenticatedRequest(req: NextApiRequest) {
